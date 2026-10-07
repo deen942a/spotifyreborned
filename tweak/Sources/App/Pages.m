@@ -7,6 +7,7 @@
 #import "Shared/Lyrics/Lyrics.h"
 #import "Shared/LyricsMeanings/Meanings.h"
 #import "Shared/Player/PlayerSettings.h"
+#import "Shared/Stats/Stats.h"
 #import "Native/Appearance/Appearance.h"
 #import "Native/Navbar/Navbar.h"
 #import "Native/NowPlayingBar/NowPlayingBar.h"
@@ -93,6 +94,7 @@ UIViewController *SGPlayerSettingsPage(void) {
     NSMutableArray<SGModSection *> *sections = [NSMutableArray arrayWithObject:SGSection(nil, @[
         SGWithSymbol(SGPageRow(@"Gestures", ^UIViewController *{ return SGGesturesSettingsPage(); }), @"hand.tap"),
         SGWithSymbol(SGPageRow(@"Lyrics", ^UIViewController *{ return lyricsPage(); }), @"quote.bubble"),
+        SGWithSymbol(SGPageRow(@"Listening stats", ^UIViewController *{ return SGStatsPage(); }), @"chart.bar"),
         SGWithSymbol(blocked, @"person.crop.circle.badge.xmark"),
     ])];
     NSMutableArray<SGModRow *> *pages = [NSMutableArray array];

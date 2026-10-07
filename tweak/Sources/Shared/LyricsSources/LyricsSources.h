@@ -128,6 +128,10 @@ extern SGLyricsAsk SGUnisonAsk;
 extern SGLyricsAsk SGNetEaseAsk;
 extern SGLyricsAsk SGLrcLibAsk;
 extern SGLyricsAsk SGSpicyLyricsAsk;
+
+@class SGModRow;
+SGModRow *SGSpicyLyricsKeyRow(void);   // the key row on the Lyrics page
+extern SGLyricsAsk SGSpicyLyricsAsk;
 SGModRow *SGSpicyLyricsKeyRow(void);
 
 UIViewController *SGLyricsSourcesPage(void);   // the ordered list on the Lyrics page
