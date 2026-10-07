@@ -205,9 +205,28 @@ BOOL SGLyricsEnabled(void) {
 // request often lands a beat before the player moves on to its track, and comparing then left the
 // query nameless. A track the player has not reported starts with nothing, and the first source
 // that matches by id fills the rest in.
+// "local:artist:album:title:seconds", a file from the Files app. Spotify's URI carries what the file's tags
+// say, a '+' for a space and percent-encoding for the rest, so the name is read off it rather than asked of
+// the player.
+static NSString *localField(NSString *raw) {
+    NSString *spaced = [raw stringByReplacingOccurrencesOfString:@"+" withString:@" "];
+    return [spaced stringByRemovingPercentEncoding] ?: spaced;
+}
+
+static SGLyricsQuery *localQuery(SGLyricsQuery *query) {
+    NSArray<NSString *> *parts = [query.trackID componentsSeparatedByString:@":"];
+    if (parts.count < 5) return query;
+    query.artist = localField(parts[1]);
+    query.album = localField(parts[2]);
+    query.title = localField(parts[3]);
+    query.seconds = [parts[4] integerValue];
+    return query;
+}
+
 static SGLyricsQuery *queryFor(NSString *trackID) {
     SGLyricsQuery *query = [SGLyricsQuery new];
     query.trackID = trackID;
+    if ([trackID hasPrefix:@"local:"]) return localQuery(query);
     SPTPlayerTrack *track = SGKaraokeTrackFor(trackID);
     if (!track) return query;
     query.title = track.trackTitle;
@@ -352,6 +371,11 @@ static void step(SGLyricsWalk *walk) {
         return;
     }
     SGLyricsProvider *provider = SGLyricsProviderFor(walk.order[walk.index++]);
+    // Musixmatch and Spicy Lyrics search by Spotify's own id, which a local file does not have.
+    if ([query.trackID hasPrefix:@"local:"] && !provider.needsName) {
+        step(walk);
+        return;
+    }
     if (!provider || !provider.ask) {
         step(walk);
         return;

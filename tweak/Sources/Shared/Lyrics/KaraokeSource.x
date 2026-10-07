@@ -139,6 +139,11 @@ NSString *SGKaraokeSpotifyAuthorization(void) {
 }
 
 static void requestFromSpotify(NSString *trackID) {
+    // A local file is no Spotify track: it stays asked for, so the readers do not start another walk.
+    if ([trackID hasPrefix:@"local:"]) {
+        [sg_requested addObject:trackID];
+        return;
+    }
     NSDictionary<NSString *, NSString *> *headers = sg_spclientHeaders;
     if (!headers) return;
     [sg_requested addObject:trackID];
@@ -214,10 +219,18 @@ static SPTPlayerState *playerState(void) {
     return [player respondsToSelector:@selector(state)] ? [(id<SPTPlayer>)player state] : nil;
 }
 
+// spotify:track:<id> is a track's own id. spotify:local:artist:album:title:seconds, a file from the Files app, is
+// "local:artist:album:title:seconds": it names no Spotify track, so nothing is asked of Spotify for it.
+static NSString *idFromURI(NSString *text) {
+    if ([text hasPrefix:@"spotify:track:"]) return [text substringFromIndex:@"spotify:track:".length];
+    if ([text hasPrefix:@"spotify:local:"]) return [text substringFromIndex:@"spotify:".length];
+    return nil;
+}
+
 NSString *SGKaraokePlayingTrack(void) {
     id uri = playerState().track.URI;
     NSString *text = [uri isKindOfClass:NSURL.class] ? ((NSURL *)uri).absoluteString : [uri description];
-    return [text hasPrefix:@"spotify:track:"] ? [text substringFromIndex:@"spotify:track:".length] : nil;
+    return idFromURI(text);
 }
 
 NSInteger SGKaraokePositionMs(void) {
@@ -235,7 +248,7 @@ void SGKaraokeSeek(NSInteger ms) {
 static NSString *idOf(SPTPlayerTrack *track) {
     id uri = track.URI;
     NSString *text = [uri isKindOfClass:NSURL.class] ? ((NSURL *)uri).absoluteString : [uri description];
-    return [text hasPrefix:@"spotify:track:"] ? [text substringFromIndex:@"spotify:track:".length] : nil;
+    return idFromURI(text);
 }
 
 // Tracks come in from the player and from every list that reads their metadata, so when the table
