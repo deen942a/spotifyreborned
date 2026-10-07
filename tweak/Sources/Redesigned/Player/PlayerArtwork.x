@@ -204,8 +204,6 @@ static SGRPlayerArtworkWatcher *sg_artworkWatcher;
     sg_covers = [NSMapTable weakToWeakObjectsMapTable];
     sg_artworkWatcher = [SGRPlayerArtworkWatcher new];
     SGAddPlayerStateObserver(sg_artworkWatcher);
-    [NSNotificationCenter.defaultCenter addObserverForName:SGLocalCoverDidChangeNotification object:nil queue:NSOperationQueue.mainQueue
-                                                usingBlock:^(NSNotification *note) { refreshCustomCovers(); }];
     SGRObservePlayerTransition(sg_artworkWatcher, ^(id owner) {
         scaleEveryCover(YES);
     }, ^(id owner) {
