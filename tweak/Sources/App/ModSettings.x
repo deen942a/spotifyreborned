@@ -18,7 +18,6 @@
 #import "Settings/SGModPage.h"
 #import "Native/Home/Home.h"
 #import "Shared/Privacy/Privacy.h"
-#import "Shared/LocalCovers/LocalCovers.h"
 #import "Shared/Flags/Flags.h"
 #import "Shared/AudioEffects/AudioEffectsPage.h"
 #import "Shared/LiveActivity/LiveActivity.h"

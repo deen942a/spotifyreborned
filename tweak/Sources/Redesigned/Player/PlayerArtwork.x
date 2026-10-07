@@ -12,9 +12,7 @@
 // the transition is over a paused cover springs down.
 #import "Core/SGCore.h"
 #import "Redesigned/Kit/SGRKit.h"
-#import <objc/runtime.h>
 #import "Player.h"
-#import "Shared/LocalCovers/LocalCovers.h"
 
 static const CGFloat kPausedScale = 0.84, kPausedScaleReduceMotion = 0.92;
 // The bar's 40pt cover lives in a tilt view of its own; the player's is 354.
@@ -75,35 +73,6 @@ static UIView *showingTilt(void) {
         if (!hidden) return tilt;
     }
     return nil;
-}
-
-// A local file's own cover (Shared/LocalCovers) laid over Spotify's, on the cover that is showing: the
-// queue keeps a cover per cell, so the cells out of view lose theirs, and a track without one hides it.
-static char kCustomKey;
-
-static void applyCustomCover(UIView *tilt) {
-    UIView *cover = coverIn(tilt);
-    if (!cover) return;
-    UIImageView *custom = objc_getAssociatedObject(tilt, &kCustomKey);
-    UIImage *image = tilt == showingTilt() ? SGLocalCoverFor(SGURIString(SGPlayerState().track.URI)) : nil;
-    if (!image) {
-        custom.hidden = YES;
-        return;
-    }
-    if (!custom) {
-        custom = [UIImageView new];
-        custom.contentMode = UIViewContentModeScaleAspectFill;
-        custom.clipsToBounds = YES;
-        objc_setAssociatedObject(tilt, &kCustomKey, custom, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    }
-    if (custom.superview != cover) [cover addSubview:custom];
-    custom.frame = cover.bounds;
-    if (custom.image != image) custom.image = image;
-    custom.hidden = NO;
-}
-
-static void refreshCustomCovers(void) {
-    for (UIView *tilt in sg_tilts.allObjects) applyCustomCover(tilt);
 }
 
 UIView *SGRPlayerCoverList(void) {
@@ -184,7 +153,6 @@ static void scaleEveryCover(BOOL animated) {
     plate.center = cover.center;
     // The same value an animation in flight is heading to, so a layout pass never cuts one short.
     scaleCover(tilt, currentScale());
-    applyCustomCover(tilt);
 
     static dispatch_once_t once;
     dispatch_once(&once, ^{ SGLog(@"redesign player: cover %@ rounded %.0f with a shadow plate, scale %.2f", NSStringFromClass(cover.class), SGRRadiusArtwork, currentScale()); });
@@ -217,7 +185,6 @@ static void scaleEveryCover(BOOL animated) {
 }
 
 - (void)playerStateDidChange:(SPTPlayerState *)state {
-    refreshCustomCovers();
     NSInteger paused = state.isPaused ? 1 : 0;
     if (paused == _paused) return;
     _paused = paused;
