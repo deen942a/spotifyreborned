@@ -352,6 +352,10 @@ static void step(SGLyricsWalk *walk) {
         return;
     }
     SGLyricsProvider *provider = SGLyricsProviderFor(walk.order[walk.index++]);
+    if (!provider || !provider.ask) {
+        step(walk);
+        return;
+    }
     if (provider.needsName && !named(query)) {
         [walk.passedOver addObject:provider.key];
         step(walk);
