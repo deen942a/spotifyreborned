@@ -18,6 +18,8 @@
 #import "Settings/SGModPage.h"
 #import "Native/Home/Home.h"
 #import "Shared/Privacy/Privacy.h"
+#import "Shared/Stats/Stats.h"
+#import "Shared/LocalCovers/LocalCovers.h"
 #import "Shared/Flags/Flags.h"
 #import "Shared/AudioEffects/AudioEffectsPage.h"
 #import "Shared/LiveActivity/LiveActivity.h"
@@ -48,12 +50,18 @@ static UIViewController *modSettingsPage(void) {
     // The audio effects work on the sound, so both looks have them, with what they are doing beside the chevron.
     SGModRow *audioEffects = pageRow(@"Audio effects", @"slider.vertical.3", ^UIViewController *{ return SGDSPSettingsPage(); });
     audioEffects.value = ^NSString *{ return SGDSPSummary(); };
+    SGModRow *stats = pageRow(@"Stats", @"chart.bar", ^UIViewController *{ return SGStatsPage(); });
+    stats.value = ^NSString *{ return SGStatsSummary(); };
+    SGModRow *localCovers = pageRow(@"Local file covers", @"photo", ^UIViewController *{ return SGLocalCoversPage(); });
+    localCovers.value = ^NSString *{ return SGLocalCoversSummary(); };
     // Home & Library holds only the native look's switches, so the redesign has no such page; the
     // Live Activity works under both, and only where ActivityKit's card does.
     NSMutableArray<SGModRow *> *parts = [NSMutableArray arrayWithArray:@[
         pageRow(@"Navbar", @"dock.rectangle", ^UIViewController *{ return SGNavbarPage(); }),
         pageRow(@"Player", @"play.circle", ^UIViewController *{ return SGPlayerSettingsPage(); }),
         audioEffects,
+        stats,
+        localCovers,
     ]];
     if (@available(iOS 17.0, *)) {
         SGModRow *liveActivity = pageRow(@"Live Activity", @"platter.filled.top.iphone", ^UIViewController *{ return SGLiveActivitySettingsPage(); });
